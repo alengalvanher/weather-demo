@@ -1,0 +1,109 @@
+<main class="app" [style.background]="background()">
+  <div class="container">
+
+    <header class="header">
+      <h1>Weather Demo</h1>
+      <p class="subtitle">Open-Meteo &middot; Capacitor &middot; Angular</p>
+    </header>
+
+    <section class="search">
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar ciudad..."
+            [ngModel]="query"
+            (ngModelChange)="onQueryChange($event)"
+            (focus)="showSuggestions.set(suggestions().length > 0)"
+            (blur)="hideSuggestionsSoon()"
+            autocomplete="off"
+          />
+          @if (showSuggestions() && suggestions().length > 0) {
+            <ul class="suggestions">
+              @for (city of suggestions(); track city.id) {
+                <li (mousedown)="selectCity(city)">
+                  <strong>{{ city.name }}</strong>
+                  <span class="muted">
+                    @if (city.admin1) { {{ city.admin1 }}, }
+                    {{ city.country }}
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        <button class="btn-location" type="button" (click)="useMyLocation()" title="Usar mi ubicacion">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    @if (errorMsg()) {
+      <div class="alert">{{ errorMsg() }}</div>
+    }
+
+    @if (loading()) {
+      <div class="loading">Cargando...</div>
+    }
+
+    @if (!loading() && !forecast() && !errorMsg()) {
+      <div class="empty">
+        <p>Busca una ciudad o usa tu ubicacion para ver el clima.</p>
+      </div>
+    }
+
+    @if (forecast() && current(); as c) {
+      <section class="current-card">
+        <div class="current-top">
+          <div class="current-info">
+            <h2>{{ formatLocation(location()!) }}</h2>
+            <p class="condition">{{ c.info.description }}</p>
+          </div>
+          <app-weather-icon [icon]="c.info.icon" [size]="110"></app-weather-icon>
+        </div>
+
+        <div class="temp-row">
+          <span class="temp-big">{{ c.temperature_2m | number:'1.0-0' }}&deg;</span>
+          <span class="temp-feels">Sensacion {{ c.apparent_temperature | number:'1.0-0' }}&deg;</span>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <span class="metric-label">Humedad</span>
+            <span class="metric-value">{{ c.relative_humidity_2m }}%</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Viento</span>
+            <span class="metric-value">{{ c.wind_speed_10m | number:'1.0-1' }} km/h</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="forecast">
+        <h3>Pronostico 7 dias</h3>
+        <ul class="forecast-list">
+          @for (d of daily(); track d.date) {
+            <li class="forecast-item">
+              <span class="day">{{ d.day }}</span>
+              <app-weather-icon [icon]="d.info.icon" [size]="36"></app-weather-icon>
+              <span class="precip">{{ d.precip }}%</span>
+              <span class="range">
+                <span class="min">{{ d.min }}&deg;</span>
+                <span class="max">{{ d.max }}&deg;</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <footer class="footer">
+      <small>Datos: open-meteo.com</small>
+    </footer>
+
+  </div>
+</main>
