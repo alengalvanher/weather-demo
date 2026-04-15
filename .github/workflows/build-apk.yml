@@ -34,8 +34,22 @@ jobs:
       - name: Build Angular (production)
         run: npx ng build --configuration=production
 
+      - name: Verify Angular build output
+        run: |
+          echo "=== dist/ ==="
+          ls -la dist/ || true
+          echo "=== dist/weather-app/ ==="
+          ls -la dist/weather-app/ || true
+          echo "=== dist/weather-app/browser/ ==="
+          ls -la dist/weather-app/browser/ || true
+          echo "=== capacitor versions ==="
+          npx cap --version || true
+          cat package.json | grep -A1 '"@capacitor'
+
       - name: Sync Capacitor with Android
-        run: npx cap sync android
+        run: npx cap sync android --verbose
+        env:
+          CI: 'true'
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
